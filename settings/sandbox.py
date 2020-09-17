@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'user.apps.UserConfig',
     'product.apps.ProductConfig',
     'sales.apps.SalesConfig',
-    'purchase.apps.PurchaseConfig'
+    'purchase.apps.PurchaseConfig',
+    'phonenumber_field'
 ]
 
 MIDDLEWARE = [
