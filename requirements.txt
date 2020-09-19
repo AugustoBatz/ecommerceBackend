@@ -4,3 +4,4 @@ markdown==3.2.2
 django-filter==2.3.0
 mysqlclient==2.0.1
 django-phonenumber-field==5.0.0
+phonenumbers==8.12.9
