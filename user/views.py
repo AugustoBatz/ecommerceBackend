@@ -8,7 +8,7 @@ from user.serializers import UserSerializer, CustomSerializer
 from django.core.mail import send_mail
 from django.conf import settings
 from django.core.mail import EmailMessage
-
+import bcrypt
 
 # Create your views here.
 
@@ -38,6 +38,13 @@ def user_signup(request):
             return Response(mock_user(), status=status.HTTP_200_OK)
         serializer = CustomSerializer(data=request.data)
         if serializer.is_valid():
+            #obtenemos el arreglo de la funcion encrypt
+            encryptArray = encrypt(serializer.data['password'])
+            #obtenemos la contrase;a encriptada
+            newPassword = encryptArray[0]
+            #obtenemos el salt
+            saltCreated = encryptArray[1]
+            print('antes de crear user')
             user = {
                 'name': serializer.data['name'],
                 'last_name': serializer.data['last_name'],
@@ -46,10 +53,19 @@ def user_signup(request):
                 'address_b': serializer.data['address_b'],
                 'email': serializer.data['email'],
                 'is_admin': serializer.data['is_admin'],
-                'password': serializer.data['password']
+                'password': newPassword,
+                'salt': saltCreated
+
             }
+            print('antes de serializer user')
             serializer_user = UserSerializer(data=user)
+#            serializer_user = UserSerializer(data = {'name': serializer.data['name'], 'last_name': serializer.data['last_name'], 'phone': serializer.data['phone'], 'address_a': serializer.data['address_a'], 'address_b': serializer.data['address_b'], 'email': serializer.data['email'], 'is_admin': serializer.data['is_admin'], 'password': newPassword, 'salt': saltCreated})
+#            serializer_user.save(owner = saltCreated)
+            print('despues de serializer_user')
+            print(serializer_user)
             if (serializer_user.is_valid()):
+
+                print('entre a verificar si el serializer de user es valido')
                 user = serializer_user.save()
                 data = serializer.data
                 del data['password']
@@ -82,6 +98,36 @@ def verification_email(mailuser):
         auth_user = email_from,
         auth_password = settings.EMAIL_HOST_PASSWORD,
         fail_silently = False)
+
+def encrypt(txt):
+    #pasamos la password a bytes
+    passwd = bytes(txt,'utf-8')
+    #generamos el salt
+    salt = bcrypt.gensalt()
+    #hash de la password
+    hashed = bcrypt.hashpw(passwd, salt)
+    arreglo = [hashed.decode('utf-8'),salt.decode('utf-8')]
+    return arreglo
+
+def decrypt(txt,salt, dbpass):
+    #pasamos la password a bytes
+    #txt seria la pass que se recibe por parte del front
+    #salt se obtiene de la base de datos para el usuario
+    #dbpass es la pass almacenada en la base de datos para el usuario
+    #pasamos la contrase;a encriptada a bytes
+    passwd = bytes(txt,'utf-8')
+    #pasamos el salt a bytes
+    salt = bytes(salt,'utf-8')
+    hashed = bcrypt.hashpw(passwd,salt)
+    #en hashed tendriamos la pass ingresada por el usuario encriptada
+    #pasamos la contrase;a almacenada a bytes
+    dbpass = bytes(dbpass,'utf-8')
+    #comparamos si ambas contrase;as son iguales
+    if hashed == dbpass:
+        return True
+    else:
+        return False
+
 
 
 

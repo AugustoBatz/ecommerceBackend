@@ -6,7 +6,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['name', 'last_name', 'phone', 'address_a', 'address_b','email', 'is_admin', 'password']
+        fields = ['name', 'last_name', 'phone', 'address_a', 'address_b','email', 'is_admin', 'password', 'salt']
 
 class CustomSerializer(serializers.Serializer):
     name = serializers.CharField(required=True, allow_blank=True, max_length=100)
@@ -17,4 +17,5 @@ class CustomSerializer(serializers.Serializer):
     email = serializers.EmailField()
     is_admin = serializers.BooleanField(default=False)
     password = serializers.CharField()
+
 

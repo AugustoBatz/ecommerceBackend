@@ -4,6 +4,8 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 
 # Create your models here.
+#aumentamos el tama;o de password a 80
+#agregamos la variable de salt
 class User(models.Model):
     name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
@@ -12,4 +14,5 @@ class User(models.Model):
     is_admin = models.BooleanField(default=False)
     address_a = models.CharField(max_length=45)
     address_b = models.CharField(max_length=45)
-    password = models.CharField(max_length=45)
+    password = models.CharField(max_length=80)
+    salt = models.CharField(max_length=80)
