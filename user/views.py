@@ -9,7 +9,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.core.mail import EmailMessage
 import bcrypt
-
+from user.userresponses import *
 # Create your views here.
 
 
@@ -148,10 +148,12 @@ def compare_passwords(txt, user):
 def verificar_usuario(password,mail):
     user = search_user(mail)
     if user == None:
-        return Response("", status=status.HTTP_404_NOT_FOUND)
+        return Response(not_found(), status=status.HTTP_404_NOT_FOUND)
     if(compare_passwords(password, user) == True):
-        return Response("", status=status.HTTP_200_OK)
-    return Response("", status=status.HTTP_401_UNAUTHORIZED)
+    #    print('si son iguales')
+        return Response(correct_user(), status=status.HTTP_200_OK)
+    #print('no autorizado')    
+    return Response(incorrect_password(), status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['POST'])
 def login(request):
