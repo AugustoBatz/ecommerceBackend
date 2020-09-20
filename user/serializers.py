@@ -18,4 +18,6 @@ class CustomSerializer(serializers.Serializer):
     is_admin = serializers.BooleanField(default=False)
     password = serializers.CharField()
 
-
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True)

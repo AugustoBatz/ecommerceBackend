@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from user.models import User
-from user.serializers import UserSerializer, CustomSerializer
+from user.serializers import UserSerializer, CustomSerializer, LoginSerializer
 from django.core.mail import send_mail
 from django.conf import settings
 from django.core.mail import EmailMessage
@@ -128,6 +128,43 @@ def decrypt(txt,salt, dbpass):
     else:
         return False
 
+def search_user(txt):
 
+    usuariow = User.objects.filter(email=txt)
+    print(usuariow)
+    if usuariow is not None:
+        respuesta = [True, usuariow.password, usuariow.salt ]
+        return respuesta
+    else: 
+        respuesta = [False]
 
+def compare_passwords(txt, usuariow):
+    passwd = bytes(txt, 'utf-8')
+    salt = bytes(usuariow.salt, 'utf-8') 
+    hashed = bcrypt.hashpw(passwd, salt)
+    dbpass = bytes(usuariow.password, 'utf-8')
+    if hashed == dbpass:
+        return True
+    else:
+        return False
 
+def verificar_usuario(password,mail):
+    if compare_passwords(password, search_user(mail)):
+        print('usuario identificado')
+    else:
+        print('datos incorrectos')
+
+@api_view(['POST'])
+def login(request):
+    if (request.method == 'POST'):
+        is_mock = request.headers['Mock']
+        if (is_mock == 'True'):
+            return False
+        datosLogin = LoginSerializer(data=request.data)
+        if datosLogin.is_valid():
+            datos = {
+                'password': datosLogin.data['password'],
+                'email': datosLogin.data['email']
+            }
+            verificar_usuario(datos['password'], datos['email'])
+            return Response(datosLogin.data, status=status.HTTP_201_CREATED)
