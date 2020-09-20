@@ -149,7 +149,7 @@ def verificar_usuario(password,mail):
     user = search_user(mail)
     if user == None:
         return Response("", status=status.HTTP_404_NOT_FOUND)
-    if(compare_passwords(user.password, user) == True):
+    if(compare_passwords(password, user) == True):
         return Response("", status=status.HTTP_200_OK)
     return Response("", status=status.HTTP_401_UNAUTHORIZED)
 
