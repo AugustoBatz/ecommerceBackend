@@ -10,6 +10,8 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 import bcrypt
 
+from django.db import transaction
+
 # Create your views here.
 
 
@@ -31,6 +33,7 @@ def user_list(request):
 
 
 @api_view(['POST'])
+@transaction.non_atomic_requests
 def user_signup(request):
     if (request.method == 'POST'):
         is_mock = request.headers['Mock']
