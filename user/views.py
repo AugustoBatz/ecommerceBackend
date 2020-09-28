@@ -9,13 +9,8 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.core.mail import EmailMessage
 import bcrypt
-<<<<<<< HEAD
 from user.userresponses import *
-=======
-
 from django.db import transaction
-
->>>>>>> 318d9bb6d7c3a12d2a161a7700772bd8c25b6b72
 # Create your views here.
 
 
