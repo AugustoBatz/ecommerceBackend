@@ -1,7 +1,5 @@
 import jwt
 from django.contrib.auth import user_logged_in
-from django.http import request
-from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -12,9 +10,7 @@ from user.models import User
 from user.serializers import UserSerializer, CustomSerializer, LoginSerializer, UserSerializerSignUp
 from django.core.mail import send_mail
 from django.conf import settings
-from django.core.mail import EmailMessage
 import bcrypt
-from user.userresponses import *
 from django.db import transaction
 # Create your views here.
 
@@ -26,6 +22,7 @@ def user_list(request):
     """
     List all code Books, or create a new Book.
     """
+    token = jwt.decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo2LCJ1c2VybmFtZSI6ImF1Z3VzdG9iYXR6QGdtYWlsLmNvbSIsImV4cCI6MTYwMTUyNjE0NCwiZW1haWwiOiJhdWd1c3RvYmF0ekBnbWFpbC5jb20ifQ.H88KRuhnKW1eJNBLnOfWdssVPK6GaxC_iJlxlgbcsrw', settings.SECRET_KEY)
     print('insade user list')
     if request.method == 'GET':
         is_mock = request.headers['Mock']
