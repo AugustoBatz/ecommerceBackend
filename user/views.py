@@ -1,10 +1,15 @@
+import jwt
+from django.contrib.auth import user_logged_in
 from django.http import request
 from django.shortcuts import render
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_jwt.serializers import jwt_payload_handler
+
 from user.models import User
-from user.serializers import UserSerializer, CustomSerializer, LoginSerializer
+from user.serializers import UserSerializer, CustomSerializer, LoginSerializer, UserSerializerSignUp
 from django.core.mail import send_mail
 from django.conf import settings
 from django.core.mail import EmailMessage
@@ -16,6 +21,7 @@ from django.db import transaction
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def user_list(request):
     """
     List all code Books, or create a new Book.
@@ -48,7 +54,7 @@ def user_signup(request):
             saltCreated = encryptArray[1]
             print('antes de crear user')
             user = {
-                'name': serializer.data['name'],
+                'first_name': serializer.data['first_name'],
                 'last_name': serializer.data['last_name'],
                 'phone': serializer.data['phone'],
                 'address_a': serializer.data['address_a'],
@@ -56,13 +62,12 @@ def user_signup(request):
                 'email': serializer.data['email'],
                 'is_admin': serializer.data['is_admin'],
                 'password': newPassword,
+                'username': serializer.data['username'],
                 'salt': saltCreated
 
             }
             print('antes de serializer user')
-            serializer_user = UserSerializer(data=user)
-#            serializer_user = UserSerializer(data = {'name': serializer.data['name'], 'last_name': serializer.data['last_name'], 'phone': serializer.data['phone'], 'address_a': serializer.data['address_a'], 'address_b': serializer.data['address_b'], 'email': serializer.data['email'], 'is_admin': serializer.data['is_admin'], 'password': newPassword, 'salt': saltCreated})
-#            serializer_user.save(owner = saltCreated)
+            serializer_user = UserSerializerSignUp(data=user)
             print('despues de serializer_user')
             print(serializer_user)
             if (serializer_user.is_valid()):
@@ -130,12 +135,14 @@ def decrypt(txt,salt, dbpass):
     else:
         return False
 
-def search_user(email):
+
+def search_user(username):
     try:
-        user = User.objects.get(email=email)
+        user = User.objects.get(username=username)
     except User.DoesNotExist:
         user = None
     return user
+
 
 def compare_passwords(txt, user):
     passwd = bytes(txt, 'utf-8')
@@ -147,27 +154,42 @@ def compare_passwords(txt, user):
     else:
         return False
 
-def verificar_usuario(password,mail):
-    user = search_user(mail)
-    if user == None:
-        return Response(not_found(), status=status.HTTP_404_NOT_FOUND)
-    if(compare_passwords(password, user) == True):
-    #    print('si son iguales')
-        return Response(correct_user(), status=status.HTTP_200_OK)
-    #print('no autorizado')    
-    return Response(incorrect_password(), status=status.HTTP_401_UNAUTHORIZED)
+
+def verify_user(password, username):
+    user = search_user(username)
+    if user is None:
+        return None
+    if compare_passwords(password, user):
+        return user
+    return None
+
 
 @api_view(['POST'])
-def login(request):
-    if (request.method == 'POST'):
-        is_mock = request.headers['mock']
-        if (is_mock == 'True'):
-            return False
-        datosLogin = LoginSerializer(data=request.data)
-        if datosLogin.is_valid():
-            datos = {
-                'password': datosLogin.data['password'],
-                'email': datosLogin.data['email']
-            }
-            return verificar_usuario(datos['password'], datos['email'])
+@permission_classes([AllowAny, ])
+def authenticate_user(request):
+    data_login = LoginSerializer(data=request.data)
+    if data_login.is_valid():
+        try:
+            username = request.data['username']
+            password = request.data['password']
+            user = verify_user(password, username)
+            if user:
+                try:
+                    payload = jwt_payload_handler(user)
+                    token = jwt.encode(payload, settings.SECRET_KEY)
+                    user_details = {}
+                    user_details['username'] = user.username
+                    user_details['token'] = token
+                    user_logged_in.send(sender=user.__class__,
+                                        request=request, user=user)
+                    return Response(user_details, status=status.HTTP_200_OK)
 
+                except Exception as e:
+                    raise e
+            else:
+                res = {
+                    'error': 'can not authenticate with the given credentials or the account has been deactivated'}
+                return Response(res, status=status.HTTP_403_FORBIDDEN)
+        except KeyError:
+            res = {'error': 'please provide a email and a password'}
+            return Response(res)

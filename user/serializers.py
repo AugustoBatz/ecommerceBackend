@@ -6,18 +6,31 @@ from phonenumber_field.modelfields import PhoneNumberField
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['name', 'last_name', 'phone', 'address_a', 'address_b','email', 'is_admin', 'password', 'salt']
+        fields = ['first_name', 'last_name', 'phone', 'address_a', 'address_b','email', 'is_admin', 'password', 'salt']
+        extra_kwargs = {'password': {'write_only': True}, 'salt': {'write_only': True}}
 
 class CustomSerializer(serializers.Serializer):
-    name = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    first_name = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    username = serializers.CharField(required=True, allow_blank=True, max_length=100)
     last_name = serializers.CharField(required=True)
     phone = serializers.CharField(required=True, max_length = 128)
     address_a = serializers.CharField(required=True)
     address_b = serializers.CharField()
     email = serializers.EmailField()
     is_admin = serializers.BooleanField(default=False)
-    password = serializers.CharField()
+    password = serializers.CharField(read_only=True)
+
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
+    username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
+
+
+class UserSerializerSignUp(serializers.ModelSerializer):
+    date_joined = serializers.ReadOnlyField()
+
+    class Meta(object):
+        model = User
+        fields = ('id', 'email', 'first_name', 'last_name',
+                  'date_joined', 'password', 'address_a', 'address_b', 'username', 'salt', 'phone')
+        extra_kwargs = {'password': {'write_only': True}, 'salt': {'write_only': True}}
