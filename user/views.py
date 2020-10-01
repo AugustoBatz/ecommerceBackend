@@ -44,6 +44,7 @@ def user_signup(request):
         serializer = CustomSerializer(data=request.data)
         if serializer.is_valid():
             #obtenemos el arreglo de la funcion encrypt
+            print(serializer.data['password'])
             encryptArray = encrypt(serializer.data['password'])
             #obtenemos la contrase;a encriptada
             newPassword = encryptArray[0]
