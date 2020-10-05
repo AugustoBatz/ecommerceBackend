@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'purchase.apps.PurchaseConfig',
     'phonenumber_field',
     'corsheaders',
-    'random'
 ]
 
 CORS_ALLOW_HEADERS = [
