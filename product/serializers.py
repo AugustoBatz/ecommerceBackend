@@ -5,9 +5,6 @@ from .models import Product
 class ProductoSerializers(serializers.ModelSerializer):
     class Meta:
         model = Product
-<<<<<<< HEAD
-        fields = '__all__'
-=======
         fields = '__all__'
 
 
@@ -22,4 +19,3 @@ class ProductoModificacionSerializers(serializers.ModelSerializer):
         instance.brand = validated_data.get('brand', instance.brand)
         instance.save()
         return instance
->>>>>>> d27da5ff957b961c0755455a9669c519fcc08dd0
