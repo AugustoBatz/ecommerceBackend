@@ -5,15 +5,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_jwt.serializers import jwt_payload_handler
-
 from user.models import User
-<<<<<<< HEAD
 from user.serializers import UserSerializer, CustomSerializer, LoginSerializer, UserSerializerSignUp, EmailSerializer
-from django.core.mail import send_mail
-=======
-from user.serializers import UserSerializer, CustomSerializer, LoginSerializer, UserSerializerSignUp
 from django.core.mail import send_mail, EmailMultiAlternatives
->>>>>>> 022ce962ac46f5580bd9ec018527c66e77e6801d
 from django.conf import settings
 import bcrypt
 from django.db import transaction
