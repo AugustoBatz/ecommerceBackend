@@ -7,8 +7,13 @@ from rest_framework.response import Response
 from rest_framework_jwt.serializers import jwt_payload_handler
 
 from user.models import User
+<<<<<<< HEAD
 from user.serializers import UserSerializer, CustomSerializer, LoginSerializer, UserSerializerSignUp, EmailSerializer
 from django.core.mail import send_mail
+=======
+from user.serializers import UserSerializer, CustomSerializer, LoginSerializer, UserSerializerSignUp
+from django.core.mail import send_mail, EmailMultiAlternatives
+>>>>>>> 022ce962ac46f5580bd9ec018527c66e77e6801d
 from django.conf import settings
 import bcrypt
 from django.db import transaction
@@ -36,7 +41,7 @@ def user_list(request):
 
 
 @api_view(['POST'])
-@transaction.non_atomic_requests
+@transaction.atomic()
 def user_signup(request):
     if (request.method == 'POST'):
         is_mock = request.headers['Mock']
@@ -75,7 +80,8 @@ def user_signup(request):
                 user = serializer_user.save()
                 data = serializer.data
                 del data['password']
-                verification_email(data['email'])
+                name = data['first_name'] + ' ' + data['last_name']
+                verification_email(data['email'], name)
                 return Response(data, status=status.HTTP_201_CREATED)
                 
             return Response(serializer_user.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -93,17 +99,28 @@ def mock_user():
         'is_admin': False,
     }
     return user;
-    
-def verification_email(mailuser):
-    email_from = settings.EMAIL_HOST_USER
-    send_mail(
-        subject = 'Bienvenido a la plataforma', 
-        message = 'El proceso de registro esta terminado', 
-        from_email = email_from, 
-        recipient_list = [mailuser], 
-        auth_user = email_from,
-        auth_password = settings.EMAIL_HOST_PASSWORD,
-        fail_silently = False)
+
+
+def verification_email(mailuser, username):
+    subject, from_email, to = 'Bienvenido a ******', settings.EMAIL_HOST_USER, mailuser
+    text_content = 'This is an important message.'
+    html_content = """<html>
+        <body style="background-color: #1d3557;">
+            <br>
+            <br> 
+            <h1 style="text-align: center; color: #f1faee;">Bienvenido a nuestra tienda</h1>
+            <div style="max-width: 60%; background-color: #e63946; margin: auto;">
+                <h1 style="text-align: center; color: #f1faee; padding-top: 5%;">¡Registro exitoso!</h1>
+                <h2 id="user" style="color: #f1faee; text-align: center;">Bienvenido: """ + username + """</h2>
+                <p style="text-align: center; color: #f1faee; font-size: x-large;">Te agradecemos mucho el formar parte de nuestra familia de usuarios, esperamos te sorprendan nuestra grandes ofertas</p>
+                <img src="https://images.pexels.com/photos/34577/pexels-photo.jpg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940" style="margin: auto; display: block; max-width: 80%; padding-bottom: 5%;" >
+            </div>
+        </body>
+        </html>"""
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
 
 def encrypt(txt):
     #pasamos la password a bytes
