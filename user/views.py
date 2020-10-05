@@ -15,14 +15,12 @@ from django.db import transaction
 # Create your views here.
 
 
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_list(request):
     """
     List all code Books, or create a new Book.
     """
-    token = jwt.decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo2LCJ1c2VybmFtZSI6ImF1Z3VzdG9iYXR6QGdtYWlsLmNvbSIsImV4cCI6MTYwMTUyNjE0NCwiZW1haWwiOiJhdWd1c3RvYmF0ekBnbWFpbC5jb20ifQ.H88KRuhnKW1eJNBLnOfWdssVPK6GaxC_iJlxlgbcsrw', settings.SECRET_KEY)
     print('insade user list')
     if request.method == 'GET':
         is_mock = request.headers['Mock']
@@ -33,6 +31,20 @@ def user_list(request):
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def profile(request):
+    authorization = request.headers['Authorization']
+    authorization_split = authorization.split(' ')
+    payload = jwt.decode(authorization_split[1], settings.SECRET_KEY)
+    user = User.objects.get(id=payload['user_id'])
+    if not user.is_active:
+        return Response({"error": "user status invalid"}, status=status.HTTP_400_BAD_REQUEST)
+    serializer = CustomSerializer(user)
+    data = serializer.data
+    del data['password']
+    return Response(data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @transaction.atomic()
@@ -71,13 +83,13 @@ def user_signup(request):
             if (serializer_user.is_valid()):
 
                 print('entre a verificar si el serializer de user es valido')
-                user = serializer_user.save()
+                serializer_user.save()
                 data = serializer.data
                 del data['password']
                 name = data['first_name'] + ' ' + data['last_name']
                 verification_email(data['email'], name)
                 return Response(data, status=status.HTTP_201_CREATED)
-                
+
             return Response(serializer_user.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -156,7 +168,7 @@ def search_user(username):
 
 def compare_passwords(txt, user):
     passwd = bytes(txt, 'utf-8')
-    salt = bytes(user.salt, 'utf-8') 
+    salt = bytes(user.salt, 'utf-8')
     hashed = bcrypt.hashpw(passwd, salt)
     dbpass = bytes(user.password, 'utf-8')
     if hashed == dbpass:
