@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Product
@@ -7,9 +8,9 @@ from django.http import Http404
 from rest_framework import status
 from user.views import *
 
-# Create your views here.
-class productoAPIView(APIView):
 
+class productoAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
     """
     Ingresa un producto
     """

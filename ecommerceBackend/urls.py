@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+<<<<<<< HEAD
 from user import views
 from product import views
 urlpatterns = [
@@ -28,4 +29,18 @@ urlpatterns = [
     path('api/login/admin', views.authenticate_admin),
     path('api/product/', views.productoAPIView.as_view()),
     path('api/product/<int:code>/', views.productoEspecificoAPIView.as_view()),
+=======
+from user import views as user_view
+from product import views as product_view
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('api/user', user_view.user_list),
+    path('api/user/profile', user_view.profile),
+    path('api/signup', user_view.user_signup),
+    path('api/login', user_view.authenticate_user),
+    path('api/recover', user_view.request_new_password),
+    path('api/login/admin', user_view.authenticate_admin),
+    path('api/product', product_view.productoAPIView.as_view()),
+>>>>>>> d27da5ff957b961c0755455a9669c519fcc08dd0
 ]
