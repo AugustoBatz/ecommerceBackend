@@ -23,9 +23,6 @@ urlpatterns = [
     path('api/user/profile', views.profile),
     path('api/signup', views.user_signup),
     path('api/login', views.authenticate_user),
-<<<<<<< HEAD
-    path('api/recover', views.request_new_password)
-=======
+    path('api/recover', views.request_new_password),
     path('api/login/admin', views.authenticate_admin),
->>>>>>> 34217f1d1d216ebb32f1c00f9a5243506a3c5bde
 ]
