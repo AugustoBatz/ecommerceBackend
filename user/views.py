@@ -15,14 +15,12 @@ from django.db import transaction
 import random
 import string
 
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_list(request):
     """
     List all code Books, or create a new Book.
     """
-    token = jwt.decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo2LCJ1c2VybmFtZSI6ImF1Z3VzdG9iYXR6QGdtYWlsLmNvbSIsImV4cCI6MTYwMTUyNjE0NCwiZW1haWwiOiJhdWd1c3RvYmF0ekBnbWFpbC5jb20ifQ.H88KRuhnKW1eJNBLnOfWdssVPK6GaxC_iJlxlgbcsrw', settings.SECRET_KEY)
     print('insade user list')
     if request.method == 'GET':
         is_mock = request.headers['Mock']
@@ -33,6 +31,20 @@ def user_list(request):
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def profile(request):
+    authorization = request.headers['Authorization']
+    authorization_split = authorization.split(' ')
+    payload = jwt.decode(authorization_split[1], settings.SECRET_KEY)
+    user = User.objects.get(id=payload['user_id'])
+    if not user.is_active:
+        return Response({"error": "user status invalid"}, status=status.HTTP_400_BAD_REQUEST)
+    serializer = CustomSerializer(user)
+    data = serializer.data
+    del data['password']
+    return Response(data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @transaction.atomic()
@@ -70,14 +82,14 @@ def user_signup(request):
             #print(serializer_user)
             if (serializer_user.is_valid()):
 
-                #print('entre a verificar si el serializer de user es valido')
-                user = serializer_user.save()
+                print('entre a verificar si el serializer de user es valido')
+                serializer_user.save()
                 data = serializer.data
                 del data['password']
                 name = data['first_name'] + ' ' + data['last_name']
                 verification_email(data['email'], name)
                 return Response(data, status=status.HTTP_201_CREATED)
-                
+
             return Response(serializer_user.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -156,7 +168,7 @@ def search_user(username):
 
 def compare_passwords(txt, user):
     passwd = bytes(txt, 'utf-8')
-    salt = bytes(user.salt, 'utf-8') 
+    salt = bytes(user.salt, 'utf-8')
     hashed = bcrypt.hashpw(passwd, salt)
     dbpass = bytes(user.password, 'utf-8')
     if hashed == dbpass:
@@ -263,3 +275,34 @@ def random_string():
 #random
 #jwt
 #djangorestframework-jwt
+
+@api_view(['POST'])
+def authenticate_admin(request):
+    data_login = LoginSerializer(data=request.data)
+    if data_login.is_valid():
+        try:
+            username = request.data['username']
+            password = request.data['password']
+            user = verify_user(password, username)
+            if user:
+                if not user.is_staff:
+                    return Response({'error': 'user invalid'}, status=status.HTTP_401_UNAUTHORIZED)
+                try:
+                    payload = jwt_payload_handler(user)
+                    token = jwt.encode(payload, settings.SECRET_KEY)
+                    user_details = {}
+                    user_details['username'] = user.username
+                    user_details['token'] = token
+                    user_logged_in.send(sender=user.__class__,
+                                        request=request, user=user)
+                    return Response(user_details, status=status.HTTP_200_OK)
+
+                except Exception as e:
+                    raise e
+            else:
+                res = {
+                    'error': 'can not authenticate with the given credentials or the account has been deactivated'}
+                return Response(res, status=status.HTTP_403_FORBIDDEN)
+        except KeyError:
+            res = {'error': 'please provide a email and a password'}
+            return Response(res)

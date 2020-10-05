@@ -9,6 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['first_name', 'last_name', 'phone', 'address_a', 'address_b','email', 'is_admin', 'password', 'salt']
         extra_kwargs = {'password': {'write_only': True}, 'salt': {'write_only': True}}
 
+
 class CustomSerializer(serializers.Serializer):
     first_name = serializers.CharField(required=True, allow_blank=True, max_length=100)
     username = serializers.CharField(required=True, allow_blank=True, max_length=100)
