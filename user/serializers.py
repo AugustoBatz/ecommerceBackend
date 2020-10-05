@@ -34,3 +34,6 @@ class UserSerializerSignUp(serializers.ModelSerializer):
         fields = ('id', 'email', 'first_name', 'last_name',
                   'date_joined', 'password', 'address_a', 'address_b', 'username', 'salt', 'phone')
         extra_kwargs = {'password': {'write_only': True}, 'salt': {'write_only': True}}
+
+class EmailSerializer(serializers.Serializer):
+    email = serializers.CharField(required=True)

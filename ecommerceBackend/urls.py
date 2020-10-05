@@ -22,4 +22,5 @@ urlpatterns = [
     path('api/user', views.user_list),
     path('api/signup', views.user_signup),
     path('api/login', views.authenticate_user),
+    path('api/recover', views.request_new_password)
 ]

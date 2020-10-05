@@ -24,3 +24,11 @@ def correct_user():
     }
     return data
     #return JsonResponse(data)
+
+def password_change():
+    data = {
+        'code': 100,
+        'description': 'La contraseña ha sido reeestablecida correctamente'
+    }
+    return data
+    
