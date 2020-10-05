@@ -25,4 +25,5 @@ urlpatterns = [
     path('api/login', views.authenticate_user),
     path('api/recover', views.request_new_password),
     path('api/login/admin', views.authenticate_admin),
+    path('api/product', views.productoAPIView.as_view()),
 ]
