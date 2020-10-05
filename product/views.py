@@ -2,7 +2,10 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Product
-from .serializers import ProductoSerializers, ProductoModificacionSerializers
+from .serializers import ProductoSerializers
+from django.http import Http404
+from rest_framework import status
+from user.views import *
 
 # Create your views here.
 class productoAPIView(APIView):
@@ -11,62 +14,57 @@ class productoAPIView(APIView):
     Ingresa un producto
     """
     def post(self,request):
-
         serializer = ProductoSerializers(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
+            return Response(serializer.data, status=status.HTTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     """
-    Obtiene un producto
+    Obtiene la lista de productos
     """
     def get(self, request):
-        codigo = request.GET.get('code')
-        if codigo is None:
-            try:
-                productos = Product.objects.all()
-            except Product.DoesNotExist:
-                return Response()
-            serializer = ProductoSerializers(productos, many = True)
-            return Response(serializer.data)
-        else:
-            try:
-                productos = Product.objects.get(code = codigo)
-            except Product.DoesNotExist:
-                return Response({'Error': 'El código ingresado no existe'})
+        productos = Product.objects.all()
+        serializer = ProductoSerializers(productos, many = True)
+        return Response(serializer.data)
 
-            serializer = ProductoSerializers(productos, many=True)
-            return Response(serializer.data)
+
+
+class productoEspecificoAPIView(APIView):
+
+    """
+    Obtiene la lista de productos
+    """
+    def get_object(self, code):
+        try:
+            return Product.objects.get(code = code)
+        except Product.DoesNotExist:
+            raise Http404
+    
+    def get(self, request, code):
+        producto = self.get_object(code)
+        serializer = ProductoSerializers(producto)
+        return Response(serializer.data)
 
     """
     Modifica un producto
-    """
-    def put(self, request):
-        codigo = request.GET.get('code')
-        try:
-            producto = Product.objects.get(code = codigo)
-            serializer = ProductoModificacionSerializer(producto, data=request.data)
-            if serializer.is_valid():
+    """ 
+    def put(self, request, code):
+        
+        producto = self.get_object(code)
+        serializer = ProductoSerializers(producto, data=request.data)
+        if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
-        except Product.DoesNotExist:
-            return Response({'Error': 'El código ingresado no existe'})
-        
-        return Response(serializer.errors)
+        else:
+                return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
     
     """
     Elimina un producto
     """
-
-    def delete(self, request):
-        codigo = request.GET.get('code')
-
-        if codigo is None:
-            try:
-                producto = Product.objects.get(code=codigo)
-                producto.delete()
-                return Response({'mensaje':'Producto eliminado con éxito'})
-            except Product.DoesNotExist:
-                return Response({'Error':'No existe el producto'}) 
-
+    def delete(self, request, code):
+        producto = self.get_object(code)
+        producto.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+ 

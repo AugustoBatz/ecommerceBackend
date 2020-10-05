@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from user import views
+from product import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
@@ -25,5 +26,6 @@ urlpatterns = [
     path('api/login', views.authenticate_user),
     path('api/recover', views.request_new_password),
     path('api/login/admin', views.authenticate_admin),
-    path('api/product', views.productoAPIView.as_view()),
+    path('api/product/', views.productoAPIView.as_view()),
+    path('api/product/<int:code>/', views.productoEspecificoAPIView.as_view()),
 ]
