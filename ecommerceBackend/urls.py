@@ -28,5 +28,5 @@ urlpatterns = [
     path('api/recover', user_view.request_new_password),
     path('api/login/admin', user_view.authenticate_admin),
     path('api/product', product_view.productoAPIView.as_view()),
-    path('api/product/<int:code>/', product_view.productoEspecificoAPIView.as_view()),
+    path('api/product/<str:code>/', product_view.productoEspecificoAPIView.as_view()),
 ]
