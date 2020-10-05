@@ -7,13 +7,14 @@ from rest_framework.response import Response
 from rest_framework_jwt.serializers import jwt_payload_handler
 
 from user.models import User
-from user.serializers import UserSerializer, CustomSerializer, LoginSerializer, UserSerializerSignUp
+from user.serializers import UserSerializer, CustomSerializer, LoginSerializer, UserSerializerSignUp, EmailSerializer
 from django.core.mail import send_mail
 from django.conf import settings
 import bcrypt
 from django.db import transaction
 # Create your views here.
-
+import random
+import string
 
 
 @api_view(['GET'])
@@ -44,13 +45,13 @@ def user_signup(request):
         serializer = CustomSerializer(data=request.data)
         if serializer.is_valid():
             #obtenemos el arreglo de la funcion encrypt
-            print(serializer.data['password'])
+            #print(serializer.data['password'])
             encryptArray = encrypt(serializer.data['password'])
             #obtenemos la contrase;a encriptada
             newPassword = encryptArray[0]
             #obtenemos el salt
             saltCreated = encryptArray[1]
-            print('antes de crear user')
+            #print('antes de crear user')
             user = {
                 'first_name': serializer.data['first_name'],
                 'last_name': serializer.data['last_name'],
@@ -64,13 +65,13 @@ def user_signup(request):
                 'salt': saltCreated
 
             }
-            print('antes de serializer user')
+            #print('antes de serializer user')
             serializer_user = UserSerializerSignUp(data=user)
-            print('despues de serializer_user')
-            print(serializer_user)
+            #print('despues de serializer_user')
+            #print(serializer_user)
             if (serializer_user.is_valid()):
 
-                print('entre a verificar si el serializer de user es valido')
+                #print('entre a verificar si el serializer de user es valido')
                 user = serializer_user.save()
                 data = serializer.data
                 del data['password']
@@ -191,3 +192,63 @@ def authenticate_user(request):
         except KeyError:
             res = {'error': 'please provide a email and a password'}
             return Response(res)
+
+def recover_password(email):
+    #generamos una password de 8 caracteres aleatorios
+    newGeneratedPass = random_string()
+    print('genere la nueva pass')
+    print(email)
+    #buscamos al usuario por su email
+    try:
+        print('entre a try')
+        thisUser = User.objects.get(email=email)
+            #obtenemos la nueva pass encriptada
+        newPass = new_encrypt(newGeneratedPass, thisUser.salt)
+    #actualizamos la password
+        thisUser.password = newPass
+    #guardamos cambios
+        thisUser.save()
+        email_from = settings.EMAIL_HOST_USER
+        send_mail(
+            subject = 'Bienvenido a la plataforma', 
+            message = 'Se ha cambiado la contrasea para tu correo en la plataforma, la actual es '+newGeneratedPass,
+            from_email = email_from, 
+            recipient_list = [email], 
+            auth_user = email_from,
+            auth_password = settings.EMAIL_HOST_PASSWORD,
+            fail_silently = False)
+    except User.DoesNotExist:
+        print('usuario no existe')
+        user = None
+
+
+
+def new_encrypt(txt,salt):
+    #pasamos la password a bytes
+    passwd = bytes(txt,'utf-8')
+    #convertimos el salt del usuario a bytes
+    salt = bytes(salt,'utf-8')
+    #hash de la password
+    hashed = bcrypt.hashpw(passwd, salt)
+    newEncryptPass = hashed.decode('utf-8')
+    return newEncryptPass
+
+@api_view(['POST'])
+@permission_classes([AllowAny, ])
+def request_new_password(request):
+    mail_recover = EmailSerializer(data=request.data)
+    if mail_recover.is_valid():
+        print('es valido')
+        recover_password(mail_recover.data['email'])
+        return Response(mail_recover.data, status=status.HTTP_200_OK)
+    return Response(mail_recover.data,status=status.HTTP_400_BAD_REQUEST)
+
+
+def random_string():
+    letras = string.ascii_lowercase
+    resultado = ''.join(random.choice(letras) for i in range(8))
+    return resultado
+
+#random
+#jwt
+#djangorestframework-jwt
