@@ -215,3 +215,35 @@ def authenticate_user(request):
         except KeyError:
             res = {'error': 'please provide a email and a password'}
             return Response(res)
+
+
+@api_view(['POST'])
+def authenticate_admin(request):
+    data_login = LoginSerializer(data=request.data)
+    if data_login.is_valid():
+        try:
+            username = request.data['username']
+            password = request.data['password']
+            user = verify_user(password, username)
+            if user:
+                if not user.is_staff:
+                    return Response({'error': 'user invalid'}, status=status.HTTP_401_UNAUTHORIZED)
+                try:
+                    payload = jwt_payload_handler(user)
+                    token = jwt.encode(payload, settings.SECRET_KEY)
+                    user_details = {}
+                    user_details['username'] = user.username
+                    user_details['token'] = token
+                    user_logged_in.send(sender=user.__class__,
+                                        request=request, user=user)
+                    return Response(user_details, status=status.HTTP_200_OK)
+
+                except Exception as e:
+                    raise e
+            else:
+                res = {
+                    'error': 'can not authenticate with the given credentials or the account has been deactivated'}
+                return Response(res, status=status.HTTP_403_FORBIDDEN)
+        except KeyError:
+            res = {'error': 'please provide a email and a password'}
+            return Response(res)
