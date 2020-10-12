@@ -19,3 +19,10 @@ class ProductoModificacionSerializers(serializers.ModelSerializer):
         instance.brand = validated_data.get('brand', instance.brand)
         instance.save()
         return instance
+
+
+class ProductDetailSerializer(serializers.Serializer):
+    code_product = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    color = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    size = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    price = serializers.FloatField(required=True)
