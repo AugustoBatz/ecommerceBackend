@@ -7,7 +7,7 @@ class Product(models.Model):
     code = models.CharField(max_length=10, unique=True)
     category = models.CharField(max_length=25)
     brand = models.CharField(max_length=25)
-
+    image = models.TextField()
 class Color(models.Model):
     color = models.CharField(max_length=15)
     
