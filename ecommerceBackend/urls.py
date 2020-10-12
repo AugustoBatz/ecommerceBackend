@@ -29,4 +29,5 @@ urlpatterns = [
     path('api/login/admin', user_view.authenticate_admin),
     path('api/product', product_view.productoAPIView.as_view()),
     path('api/product/<str:code>/', product_view.productoEspecificoAPIView.as_view()),
+    path('api/product/detail', product_view.add_product_detail),
 ]
