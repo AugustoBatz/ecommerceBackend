@@ -26,4 +26,5 @@ class ProductDetail(models.Model):
 class PurchaseDetail(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     quantity = models.IntegerField()
+    cost = models.FloatField()
     detail_product = models.ForeignKey(ProductDetail, on_delete=models.CASCADE)

@@ -27,3 +27,9 @@ class ProductDetailSerializer(serializers.Serializer):
     color = serializers.CharField(required=True, allow_blank=True, max_length=100)
     size = serializers.CharField(required=True, allow_blank=True, max_length=100)
     price = serializers.FloatField(required=True)
+
+
+class ProductDetailPurchaseSerializer(serializers.Serializer):
+    id_detail_product = serializers.IntegerField(required=True)
+    quantity = serializers.IntegerField(required=True)
+    cost = serializers.FloatField(required=True)

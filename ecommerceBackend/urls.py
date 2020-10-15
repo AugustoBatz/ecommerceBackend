@@ -30,4 +30,5 @@ urlpatterns = [
     path('api/product', product_view.productoAPIView.as_view()),
     path('api/product/<str:code>/', product_view.productoEspecificoAPIView.as_view()),
     path('api/product/detail', product_view.add_product_detail),
+    path('api/product/detail/purchase', product_view.add_product_detail_purchase)
 ]

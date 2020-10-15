@@ -1,10 +1,10 @@
 from rest_framework.permissions import IsAdminUser
 from rest_framework.views import APIView
 from .models import Product
-from .serializers import ProductoSerializers, ProductDetailSerializer
+from .serializers import ProductoSerializers, ProductDetailSerializer, ProductDetailPurchaseSerializer
 from django.http import Http404
 from user.views import *
-from product.services import create_detail_product
+from product.services import create_detail_product, create_detail_purchase_product
 
 
 class productoAPIView(APIView):
@@ -81,4 +81,19 @@ def add_product_detail(request):
     serializer = ProductDetailSerializer(data=request.data)
     if serializer.is_valid():
         return create_detail_product(serializer)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@transaction.atomic()
+def add_product_detail_purchase(request):
+    authorization = request.headers['Authorization']
+    authorization_split = authorization.split(' ')
+    payload = jwt.decode(authorization_split[1], settings.SECRET_KEY)
+    user = User.objects.get(id=payload['user_id'])
+    if not user.is_active:
+        return Response({"error": "user status invalid"}, status=status.HTTP_400_BAD_REQUEST)
+    serializer = ProductDetailPurchaseSerializer(data=request.data)
+    if serializer.is_valid():
+        return create_detail_purchase_product(serializer)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
