@@ -30,6 +30,7 @@ def create_detail_product(serializer):
             price=serializer.data['price']
         )
         data = {
+            "id": product_detail.pk,
             'product': product.code,
             'size': product_detail.size_id.size,
             'color': product_detail.color_id.color,
