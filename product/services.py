@@ -62,4 +62,34 @@ def create_detail_purchase_product(serializer):
     detail_product.quantity = detail_product.quantity + product_detail_purchase.quantity
     detail_product.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
-9
+
+
+def get_sub_details_product(code):
+    try:
+        product = Product.objects.get(code=code)
+    except Product.DoesNotExist:
+        return Response({
+            'code': 404,
+            'description': 'El producto no existe'
+        }, status=status.HTTP_404_NOT_FOUND)
+    products_details = ProductDetail.objects.filter(product_id=product.pk)
+    details = []
+    total = 0
+    for product_detail in products_details:
+        detail = {
+            "size": product_detail.size_id.size,
+            "color": product_detail.color_id.color,
+            "quantity": product_detail.quantity,
+            "price": product_detail.price
+        }
+        total = total + product_detail.quantity
+        details.append(detail)
+    data = {
+        "stock": total,
+        "name": product.name,
+        "code": product.code,
+        "category": product.category,
+        "brand": product.brand,
+        "details": details,
+    }
+    return Response(data, status=status.HTTP_200_OK)
