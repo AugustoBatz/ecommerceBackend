@@ -51,7 +51,7 @@ def create_detail_purchase_product(serializer):
         detail_product = ProductDetail.objects.get(pk=serializer.data['id_detail_product'])
     except ProductDetail.DoesNotExist:
         return Response({
-            'code': 400,
+            'code': 404,
             'description': 'El Detalle del producto no existe'
         }, status=status.HTTP_404_NOT_FOUND)
 
@@ -81,7 +81,8 @@ def get_sub_details_product(code):
             "size": product_detail.size_id.size,
             "color": product_detail.color_id.color,
             "quantity": product_detail.quantity,
-            "price": product_detail.price
+            "price": product_detail.price,
+            "id": product_detail.pk
         }
         total = total + product_detail.quantity
         details.append(detail)

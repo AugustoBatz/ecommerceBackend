@@ -31,7 +31,7 @@ class productoAPIView(APIView):
 
 
 class productoEspecificoAPIView(APIView):
-
+    permission_classes = [IsAuthenticated, IsAdminUser]
     """
     Obtiene la lista de productos
     """
@@ -69,7 +69,7 @@ class productoEspecificoAPIView(APIView):
  
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 @transaction.atomic()
 def add_product_detail(request):
     authorization = request.headers['Authorization']
@@ -85,7 +85,7 @@ def add_product_detail(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 @transaction.atomic()
 def add_product_detail_purchase(request):
     authorization = request.headers['Authorization']
@@ -101,7 +101,7 @@ def add_product_detail_purchase(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 @transaction.atomic()
 def get_products_detail(request, code):
     authorization = request.headers['Authorization']

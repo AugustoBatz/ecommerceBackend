@@ -215,6 +215,7 @@ def authenticate_user(request):
         except KeyError:
             res = {'error': 'please provide a email and a password'}
             return Response(res)
+    return Response(data_login.errors, status=status.HTTP_400_BAD_REQUEST)
 
 def recover_password(email):
     #generamos una password de 8 caracteres aleatorios
