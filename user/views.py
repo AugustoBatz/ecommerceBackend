@@ -14,7 +14,8 @@ from django.db import transaction
 # Create your views here.
 import random
 import string
-
+from product.models import Product, ProductDetail, Color, Size
+from product.serializers import ProductDetailSerializer, ProductoSerializers
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_list(request):
@@ -307,3 +308,45 @@ def authenticate_admin(request):
         except KeyError:
             res = {'error': 'please provide a email and a password'}
             return Response(res)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_subproducts(request):
+    
+
+    try:
+ 
+        subproductos = ProductDetail.objects.all().order_by('product_id_id')
+            
+    
+        colors = Color.objects.all()
+       
+        sizes = Size.objects.all()
+       
+        products = Product.objects.all()
+
+        mylist = []
+
+        for i in subproductos:
+            print('product_id_id de este producto')
+            print(i.product_id_id)
+            print('----')
+            thisProductDetail = ProductDetail.objects.filter(id=subproductos[i.id-1].product_id_id)
+
+            thisProduct = Product.objects.filter(id=i.product_id_id)
+
+            thisColor = Color.objects.filter(id=i.color_id_id)
+
+            thisTalla = Size.objects.filter(id=i.size_id_id)
+
+            thisPrice = i.price
+ 
+            thisQuantity = i.quantity
+
+            mylist.append({'nombre': thisProduct[0].name,'color':thisColor[0].color, 'talla': thisTalla[0].size,'cantidad': thisQuantity, 'precio':thisPrice})
+        
+
+        return Response(mylist)
+    except Exception as e:
+        res = {'error': 'error'}
+        return Response(res)
