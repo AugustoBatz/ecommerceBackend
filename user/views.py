@@ -328,11 +328,11 @@ def list_subproducts(request):
         mylist = []
 
         for i in subproductos:
-            print('product_id_id de este producto')
-            print(i.product_id_id)
-            print('----')
+            #print('product_id_id de este producto')
+            #print(i.product_id_id)
+            #print('----')
             thisProductDetail = ProductDetail.objects.filter(id=subproductos[i.id-1].product_id_id)
-
+            thisId=i.id
             thisProduct = Product.objects.filter(id=i.product_id_id)
 
             thisColor = Color.objects.filter(id=i.color_id_id)
@@ -343,7 +343,7 @@ def list_subproducts(request):
  
             thisQuantity = i.quantity
 
-            mylist.append({'nombre': thisProduct[0].name,'color':thisColor[0].color, 'talla': thisTalla[0].size,'cantidad': thisQuantity, 'precio':thisPrice})
+            mylist.append({'id': thisId,'nombre': thisProduct[0].name,'color':thisColor[0].color, 'talla': thisTalla[0].size,'cantidad': thisQuantity, 'precio':thisPrice})
         
 
         return Response(mylist)
