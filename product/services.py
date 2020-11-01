@@ -95,3 +95,42 @@ def get_sub_details_product(code):
         "details": details,
     }
     return Response(data, status=status.HTTP_200_OK)
+
+def get_all_details():
+    try:
+        allproducts = Product.objects.all()
+        list_of_subproducts = []
+        for i in allproducts:
+           
+            products_details = ProductDetail.objects.filter(product_id=i.pk)
+            details = []
+            total = 0
+            for product_detail in products_details:
+                detail = {
+                    "size": product_detail.size_id.size,
+                    "color": product_detail.color_id.color,
+                    "quantity": product_detail.quantity,
+                    "price": product_detail.price,
+                    "id": product_detail.pk
+                }
+                total = total + product_detail.quantity
+                details.append(detail)
+            sub_ = {
+                'id': i.id,
+                'name': i.name,
+                'code': i.code,
+                'category': i.category,
+                'brand': i.brand,
+                'image': i.image,
+                'subproducts': details
+            }
+
+            list_of_subproducts.append(sub_)
+        for item in list_of_subproducts:
+            print(item)
+        return Response(list_of_subproducts, status=status.HTTP_202_ACCEPTED)
+    except Product.DoesNotExist:
+        return Response({
+            'code': 404,
+            'description': 'Error al mostrar todos los subproductos'
+        }, status=status.HTTP_404_NOT_FOUND)
