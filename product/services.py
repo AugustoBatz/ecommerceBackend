@@ -2,7 +2,7 @@ from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.response import Response
 from product.models import Product, Color, Size, ProductDetail, PurchaseDetail
-
+from django.db.models import Q
 
 def create_detail_product(serializer):
     try:
@@ -134,3 +134,68 @@ def get_all_details():
             'code': 404,
             'description': 'Error al mostrar todos los subproductos'
         }, status=status.HTTP_404_NOT_FOUND)
+
+def get_search(search):
+    try:
+        p_found = True
+        b_found = True
+        products_p_found = Product.objects.filter(name__icontains=search)
+        brand_p_found = Product.objects.filter(brand__icontains=search)
+        if not products_p_found:
+            p_found = False
+
+        if not brand_p_found:
+            b_found = False
+
+        if b_found and p_found:
+
+            products_found =  Product.objects.filter(Q(name__icontains=search) | Q(brand__icontains=search))
+        if p_found == False and b_found == True:
+
+            products_found = Product.objects.filter(brand__icontains=search)
+        if p_found == True and b_found == False:
+
+            products_found = Product.objects.filter(name__icontains=search)
+        if p_found == False and b_found == False:
+            return Response({
+                'code': 404,
+                'description': 'Error al mostrar todos los subproductos'
+            }, status=status.HTTP_404_NOT_FOUND)
+        return Response(get_products_found(products_found), status=status.HTTP_404_NOT_FOUND)
+
+    except Product.DoesNotExist:
+        return Response({
+            'code': 404,
+            'description': 'Error al mostrar todos los subproductos'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+def get_products_found(list_objects):
+    ret = []
+    for i in list_objects:
+        try:
+            product = Product.objects.get(code=i.code)
+        except Product.DoesNotExist:
+            return null
+        products_details = ProductDetail.objects.filter(product_id=product.pk)
+        details = []
+        total = 0
+        for product_detail in products_details:
+            detail = {
+                "size": product_detail.size_id.size,
+                "color": product_detail.color_id.color,
+                "quantity": product_detail.quantity,
+                "price": product_detail.price,
+                "id": product_detail.pk
+            }
+            total = total + product_detail.quantity
+            details.append(detail)
+        data = {
+            "stock": total,
+            "name": product.name,
+            "code": product.code,
+            "category": product.category,
+            "brand": product.brand,
+            "details": details,
+        }
+        ret.append(data)
+    return ret
