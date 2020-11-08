@@ -8,6 +8,8 @@ class Product(models.Model):
     category = models.CharField(max_length=25)
     brand = models.CharField(max_length=25)
     image = models.TextField()
+    quantity = models.IntegerField()
+
 class Color(models.Model):
     color = models.CharField(max_length=15)
     

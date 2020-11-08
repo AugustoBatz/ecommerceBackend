@@ -4,7 +4,7 @@ from .models import Product
 from .serializers import ProductoSerializers, ProductDetailSerializer, ProductDetailPurchaseSerializer
 from django.http import Http404
 from user.views import *
-from product.services import create_detail_product, create_detail_purchase_product, get_sub_details_product, get_all_details, get_search
+from product.services import create_detail_product, create_detail_purchase_product, get_sub_details_product, get_all_details, get_search, get_products_user
 
 
 class productoAPIView(APIView):
@@ -134,3 +134,15 @@ def search_products(request, search):
     if not user.is_active:
         return Response({"error": "user status invalid"}, status=status.HTTP_400_BAD_REQUEST)
     return get_search(search)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_products_for_user(request):
+    authorization = request.headers['Authorization']
+    authorization_split = authorization.split(' ')
+    payload = jwt.decode(authorization_split[1], settings.SECRET_KEY)
+    user = User.objects.get(id=payload['user_id'])
+    if not user.is_active:
+        return Response({"error": "user status invalid"}, status=status.HTTP_400_BAD_REQUEST)
+    return get_products_user()

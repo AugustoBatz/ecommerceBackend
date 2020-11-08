@@ -49,6 +49,7 @@ def create_detail_product(serializer):
 def create_detail_purchase_product(serializer):
     try:
         detail_product = ProductDetail.objects.get(pk=serializer.data['id_detail_product'])
+        product = detail_product.product_id
     except ProductDetail.DoesNotExist:
         return Response({
             'code': 404,
@@ -62,6 +63,8 @@ def create_detail_purchase_product(serializer):
     )
     detail_product.quantity = detail_product.quantity + product_detail_purchase.quantity
     detail_product.save()
+    product.quantity = product.quantity + product_detail_purchase.quantity
+    product.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -199,3 +202,22 @@ def get_products_found(list_objects):
         }
         ret.append(data)
     return ret
+
+
+
+
+def get_products_user():
+    products = Product.objects.all().filter(quantity__gte=0)
+    products_list = []
+    for product in products:
+        if product.quantity != 0:
+            simple_product = {
+                "code": product.code,
+                "name": product.name,
+                "category": product.category,
+                "brand": product.brand,
+                "image": product.image,
+                "stock": product.quantity
+            }
+            products_list.append(simple_product)
+    return Response(products_list, status=status.HTTP_200_OK)
