@@ -95,6 +95,7 @@ def get_sub_details_product(code):
         "code": product.code,
         "category": product.category,
         "brand": product.brand,
+        "image": product.image,
         "details": details,
     }
     return Response(data, status=status.HTTP_200_OK)
@@ -199,6 +200,7 @@ def get_products_found(list_objects):
             "category": product.category,
             "brand": product.brand,
             "details": details,
+            "image": product.image,
         }
         ret.append(data)
     return ret
@@ -254,6 +256,8 @@ def get_product_detail_user(code):
         "code": product.code,
         "category": product.category,
         "brand": product.brand,
+        "image": product.image,
         "details": details,
+
     }
     return Response(data, status=status.HTTP_200_OK)
