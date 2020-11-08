@@ -142,7 +142,7 @@ def search_products(request, search):
 
 
 @api_view(['GET'])
-def get_products_for_user():
+def get_products_for_user(request):
     return get_products_user()
 
 
