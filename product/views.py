@@ -147,7 +147,6 @@ def get_products_for_user(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def get_products_detail_for_user(request, code):
     return get_product_detail_user(code)
 
