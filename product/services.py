@@ -204,8 +204,6 @@ def get_products_found(list_objects):
     return ret
 
 
-
-
 def get_products_user():
     products = Product.objects.all().filter(quantity__gte=0)
     products_list = []
@@ -221,3 +219,41 @@ def get_products_user():
             }
             products_list.append(simple_product)
     return Response(products_list, status=status.HTTP_200_OK)
+
+
+def get_product_detail_user(code):
+    try:
+        product = Product.objects.get(code=code)
+    except Product.DoesNotExist:
+        return Response({
+            'code': 404,
+            'description': 'El producto no existe'
+        }, status=status.HTTP_404_NOT_FOUND)
+    products_details = ProductDetail.objects.filter(product_id=product.pk)
+    details = []
+    total = 0
+    for product_detail in products_details:
+        detail = {
+            "color": {
+                "color": product_detail.color_id.color,
+                "id": product_detail.color_id.pk
+            },
+            "quantity": product_detail.quantity,
+            "price": product_detail.price,
+            "id": product_detail.pk,
+            "size": {
+                "size": product_detail.size_id.size,
+                "id": product_detail.size_id.pk
+            }
+        }
+        total = total + product_detail.quantity
+        details.append(detail)
+    data = {
+        "stock": total,
+        "name": product.name,
+        "code": product.code,
+        "category": product.category,
+        "brand": product.brand,
+        "details": details,
+    }
+    return Response(data, status=status.HTTP_200_OK)

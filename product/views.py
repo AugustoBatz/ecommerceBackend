@@ -4,7 +4,7 @@ from .models import Product
 from .serializers import ProductoSerializers, ProductDetailSerializer, ProductDetailPurchaseSerializer
 from django.http import Http404
 from user.views import *
-from product.services import create_detail_product, create_detail_purchase_product, get_sub_details_product, get_all_details, get_search, get_products_user
+from product.services import *
 
 
 class productoAPIView(APIView):
@@ -12,22 +12,23 @@ class productoAPIView(APIView):
     """
     Ingresa un producto
     """
-    def post(self,request):
+
+    def post(self, request):
         serializer = ProductoSerializers(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     """
     Obtiene la lista de productos
     """
+
     def get(self, request):
         productos = Product.objects.all()
-        serializer = ProductoSerializers(productos, many = True)
+        serializer = ProductoSerializers(productos, many=True)
         return Response(serializer.data)
-
 
 
 class productoEspecificoAPIView(APIView):
@@ -35,12 +36,13 @@ class productoEspecificoAPIView(APIView):
     """
     Obtiene la lista de productos
     """
+
     def get_object(self, code):
         try:
-            return Product.objects.get(code = code)
+            return Product.objects.get(code=code)
         except Product.DoesNotExist:
             raise Http404
-    
+
     def get(self, request, code):
         producto = self.get_object(code)
         serializer = ProductoSerializers(producto)
@@ -48,25 +50,27 @@ class productoEspecificoAPIView(APIView):
 
     """
     Modifica un producto
-    """ 
+    """
+
     def put(self, request, code):
-        
+
         producto = self.get_object(code)
         serializer = ProductoSerializers(producto, data=request.data)
         if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
+            serializer.save()
+            return Response(serializer.data)
         else:
-                return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
-    
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     """
     Elimina un producto
     """
+
     def delete(self, request, code):
         producto = self.get_object(code)
         producto.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
- 
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsAdminUser])
@@ -112,6 +116,7 @@ def get_products_detail(request, code):
         return Response({"error": "user status invalid"}, status=status.HTTP_400_BAD_REQUEST)
     return get_sub_details_product(code)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def get_all_products_detail(request):
@@ -146,3 +151,16 @@ def get_products_for_user(request):
     if not user.is_active:
         return Response({"error": "user status invalid"}, status=status.HTTP_400_BAD_REQUEST)
     return get_products_user()
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_products_detail_for_user(request, code):
+    authorization = request.headers['Authorization']
+    authorization_split = authorization.split(' ')
+    payload = jwt.decode(authorization_split[1], settings.SECRET_KEY)
+    user = User.objects.get(id=payload['user_id'])
+    if not user.is_active:
+        return Response({"error": "user status invalid"}, status=status.HTTP_400_BAD_REQUEST)
+    return get_product_detail_user(code)
+

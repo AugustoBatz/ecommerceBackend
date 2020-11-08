@@ -23,6 +23,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/user', user_view.user_list),
     path('api/user/product', product_view.get_products_for_user),
+    path('api/user/product/detail/<str:code>', product_view.get_products_detail_for_user),
     path('api/user/profile', user_view.profile),
     path('api/signup', user_view.user_signup),
     path('api/login', user_view.authenticate_user),
