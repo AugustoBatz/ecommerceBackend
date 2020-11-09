@@ -21,6 +21,8 @@ from product import views as product_view
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('api/admin', user_view.user_admin),
+    path('api/admin/<str:username>', user_view.user_admin_username),
     path('api/user', user_view.user_list),
     path('api/user/product', product_view.get_products_for_user),
     path('api/user/product/detail/<str:code>', product_view.get_products_detail_for_user),

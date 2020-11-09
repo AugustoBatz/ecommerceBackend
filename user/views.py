@@ -2,7 +2,7 @@ import jwt
 from django.contrib.auth import user_logged_in
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework_jwt.serializers import jwt_payload_handler
 from user.models import User
@@ -14,8 +14,8 @@ from django.db import transaction
 # Create your views here.
 import random
 import string
-from product.models import Product, ProductDetail, Color, Size
-from product.serializers import ProductDetailSerializer, ProductoSerializers
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_list(request):
@@ -308,3 +308,106 @@ def authenticate_admin(request):
         except KeyError:
             res = {'error': 'please provide a email and a password'}
             return Response(res)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+@transaction.atomic()
+def user_admin(request):
+    if request.method == 'GET':
+        is_mock = request.headers['Mock']
+        if (is_mock == 'True'):
+            return Response(list, status=status.HTTP_200_OK)
+        print('insade get')
+        users = User.objects.all().filter(is_staff=1, is_active=1)
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
+    if request.method == 'POST':
+        serializer = CustomSerializer(data=request.data)
+        if serializer.is_valid():
+            # obtenemos el arreglo de la funcion encrypt
+            # print(serializer.data['password'])
+            encryptArray = encrypt(serializer.data['password'])
+            # obtenemos la contrase;a encriptada
+            newPassword = encryptArray[0]
+            # obtenemos el salt
+            saltCreated = encryptArray[1]
+            # print('antes de crear user')
+            user = {
+                'first_name': serializer.data['first_name'],
+                'last_name': serializer.data['last_name'],
+                'phone': serializer.data['phone'],
+                'address_a': serializer.data['address_a'],
+                'address_b': serializer.data['address_b'],
+                'email': serializer.data['email'],
+                'is_admin': serializer.data['is_admin'],
+                'password': newPassword,
+                'username': serializer.data['username'],
+                'salt': saltCreated
+
+            }
+            # print('antes de serializer user')
+            serializer_user = UserSerializerSignUp(data=user)
+            # print('despues de serializer_user')
+            # print(serializer_user)
+            if serializer_user.is_valid():
+                print('entre a verificar si el serializer de user es valido')
+                user = serializer_user.save()
+                user.is_staff = 1
+                user.save()
+                data = serializer.data
+                del data['password']
+                name = data['first_name'] + ' ' + data['last_name']
+                #verification_email(data['email'], name)
+                return Response(data, status=status.HTTP_201_CREATED)
+
+            return Response(serializer_user.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'DELETE', 'PUT'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+@transaction.atomic()
+def user_admin_username(request, username):
+    try:
+        user = User.objects.get(username=username, is_staff=1, is_active=1)
+    except User.DoesNotExist:
+        return Response({"error": "user not found"}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'GET':
+        user_serializer = {
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'phone': str(user.phone),
+            'address_a': user.address_a,
+            'address_b': user.address_a,
+            'email': user.email,
+            'username': user.username
+        }
+        return Response(user_serializer, status=status.HTTP_200_OK)
+    if request.method == 'DELETE':
+        user.is_active = 0
+        user.save()
+        return Response({"message": "user delete"}, status=status.HTTP_200_OK)
+    if request.method == 'PUT':
+        serializer = CustomSerializer(data=request.data)
+        if serializer.is_valid():
+            user_validation = User.objects.all().filter(phone=serializer.data['phone'])
+            if user_validation.count() != 0:
+                return Response({"phone": ["user with this phone already exists."]}, status=status.HTTP_400_BAD_REQUEST)
+            user_validation = User.objects.all().filter(username=serializer.data['username'])
+            if user_validation.count() != 0:
+                return Response({"username": ["user with this username already exists."]}, status=status.HTTP_400_BAD_REQUEST)
+            user_validation = User.objects.all().filter(email=serializer.data['email'])
+            if user_validation.count() != 0:
+                return Response({"email": ["user with this email already exists."]},
+                                status=status.HTTP_400_BAD_REQUEST)
+            user.first_name = serializer.data['first_name']
+            user.last_name = serializer.data['last_name']
+            user.phone = serializer.data['phone']
+            user.address_a = serializer.data['address_a']
+            user.address_b = serializer.data['address_b']
+            user.email = serializer.data['email']
+            user.username = serializer.data['username']
+            user.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
