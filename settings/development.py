@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'sales.apps.SalesConfig',
     'purchase.apps.PurchaseConfig',
     'corsheaders',
+    'content'
 ]
 
 CORS_ALLOW_HEADERS = [

@@ -1,6 +1,5 @@
 from rest_framework.permissions import IsAdminUser
 from rest_framework.views import APIView
-from .models import Product
 from .serializers import ProductoSerializers, ProductDetailSerializer, ProductDetailPurchaseSerializer
 from django.http import Http404
 from user.views import *
