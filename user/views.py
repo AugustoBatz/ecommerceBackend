@@ -28,7 +28,7 @@ def user_list(request):
         if (is_mock == 'True'):
             return Response(list, status=status.HTTP_200_OK)
         print('insade get')
-        users = User.objects.all()
+        users = User.objects.all().filter(is_staff=0)
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
