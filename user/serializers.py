@@ -6,7 +6,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'phone', 'address_a', 'address_b','email', 'is_admin', 'password', 'salt']
+        fields = ['first_name', 'last_name', 'phone', 'address_a', 'address_b','email', 'is_admin', 'password', 'salt', 'username']
         extra_kwargs = {'password': {'write_only': True}, 'salt': {'write_only': True}}
 
 
