@@ -98,11 +98,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'ecommerce',
-        'USER': 'ecommerce',
+        'USER': 'devSYS',
         'PASSWORD': '3comm3rc3',
-        'HOST': 'localhost',
-        'PORT': '3306',
-        'PROTOCOL':'TCP',
+        'HOST': 'devSYS.mysql.pythonanywhere-services.com',
+        'PORT': '3306'
     }
 }
 
