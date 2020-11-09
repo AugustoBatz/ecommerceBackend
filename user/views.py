@@ -358,7 +358,7 @@ def user_admin(request):
                 data = serializer.data
                 del data['password']
                 name = data['first_name'] + ' ' + data['last_name']
-                #verification_email(data['email'], name)
+                verification_email(data['email'], name)
                 return Response(data, status=status.HTTP_201_CREATED)
 
             return Response(serializer_user.errors, status=status.HTTP_400_BAD_REQUEST)
