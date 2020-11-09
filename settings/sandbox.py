@@ -21,6 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
+SECRET_KEY = '(+8xssqg3j%b%gd)66zt)r^&v2x%oujrsegg&rf-y_6y^yhltr'
 DEBUG = False
 
 ALLOWED_HOSTS = []
@@ -29,6 +30,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'phonenumber_field',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,8 +42,8 @@ INSTALLED_APPS = [
     'product.apps.ProductConfig',
     'sales.apps.SalesConfig',
     'purchase.apps.PurchaseConfig',
-    'phonenumber_field',
     'corsheaders',
+    'content'
 ]
 
 CORS_ALLOW_HEADERS = [
@@ -94,8 +96,13 @@ WSGI_APPLICATION = 'ecommerceBackend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'ecommerce',
+        'USER': 'ecommerce',
+        'PASSWORD': '3comm3rc3',
+        'HOST': 'localhost',
+        'PORT': '3306',
+        'PROTOCOL':'TCP',
     }
 }
 
@@ -120,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
-       'http://localhost:4200',
+       'http://localhost:4200', '*'
 )
 
 # Internationalization
@@ -141,3 +148,34 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+#verification email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'abismuzirc97@gmail.com'
+EMAIL_HOST_PASSWORD =  '@noventaysiete@97'
+DEFAULT_FR0M_EMAIL = EMAIL_HOST_USER
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAILS_USE_SSL = False
+
+#Encryption
+PASSWORD_HASHERS = [
+      'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+]
+
+AUTH_USER_MODEL = 'user.User'
+
+REST_FRAMEWORK = {
+  'DEFAULT_AUTHENTICATION_CLASSES': (
+    'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+  ),
+}
+JWT_AUTH = {
+
+    'JWT_VERIFY': True,
+    'JWT_VERIFY_EXPIRATION': True,
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=3000),
+    'JWT_AUTH_HEADER_PREFIX': 'Bearer',
+
+}
