@@ -2,19 +2,13 @@ from user.views import *
 from content.models import Page
 from content.serializer import PageSerializer
 
+
 @api_view(['PUT', 'GET'])
-@permission_classes([IsAuthenticated, IsAdminUser])
 @transaction.atomic()
 def update_content(request, page):
-    authorization = request.headers['Authorization']
-    authorization_split = authorization.split(' ')
-    payload = jwt.decode(authorization_split[1], settings.SECRET_KEY)
-    user = User.objects.get(id=payload['user_id'])
-    if not user.is_active:
-        return Response({"error": "user status invalid"}, status=status.HTTP_400_BAD_REQUEST)
     try:
         page_search = Page.objects.get(name=page)
-    except User.DoesNotExist:
+    except Page.DoesNotExist:
         return Response({"error": "Page not found"}, status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'PUT':
         serializer = PageSerializer(data=request.data)
@@ -66,17 +60,9 @@ def update_content(request, page):
         return Response(simple_page, status=status.HTTP_200_OK)
 
 
-
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsAdminUser])
 @transaction.atomic()
 def get_content(request):
-    authorization = request.headers['Authorization']
-    authorization_split = authorization.split(' ')
-    payload = jwt.decode(authorization_split[1], settings.SECRET_KEY)
-    user = User.objects.get(id=payload['user_id'])
-    if not user.is_active:
-        return Response({"error": "user status invalid"}, status=status.HTTP_400_BAD_REQUEST)
     pages = Page.objects.all()
     list_page = []
     for page in pages:
