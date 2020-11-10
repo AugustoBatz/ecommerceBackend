@@ -20,8 +20,8 @@ from user import views as user_view
 from product import views as product_view
 from content import views as content_view
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    #path('admin/', admin.site.urls),
+    #path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/admin', user_view.user_admin),
     path('api/admin/<str:username>', user_view.user_admin_username),
     path('api/user', user_view.user_list),
