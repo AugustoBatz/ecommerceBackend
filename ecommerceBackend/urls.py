@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
+from  contactus import  views as contact_view
 from user import views as user_view
 from product import views as product_view
 from content import views as content_view
@@ -44,5 +44,6 @@ urlpatterns = [
     path('api/content/page/<str:page>/', content_view.update_content),
     path('api/content/page', content_view.get_content),
     path('api/shopping-car', sales_view.shopping_car),
-    path('api/sale', sales_view.sale)
+    path('api/sale', sales_view.sale),
+    path('api/contactus', contact_view.send_contact_email )
 ]
