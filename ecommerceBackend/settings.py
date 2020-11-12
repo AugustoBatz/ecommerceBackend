@@ -25,7 +25,7 @@ SECRET_KEY = '(+8xssqg3j%b%gd)66zt)r^&v2x%oujrsegg&rf-y_6y^yhltr'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['184.72.171.253']
+ALLOWED_HOSTS = ['184.72.171.253', 'clothingmecoders.ddns.net']
 
 
 # Application definition
@@ -126,10 +126,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CORS_ORIGIN_ALLOW_ALL = False
-CORS_ORIGIN_WHITELIST = (
-       'http://localhost:4200',
-)
+CORS_ORIGIN_ALLOW_ALL = True
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
