@@ -392,13 +392,13 @@ def user_admin_username(request, username):
         serializer = CustomSerializer(data=request.data)
         if serializer.is_valid():
             user_validation = User.objects.all().filter(phone=serializer.data['phone'])
-            if user_validation.count() != 0:
+            if user_validation.count() != 0 and user.phone != serializer.data['phone']:
                 return Response({"phone": ["user with this phone already exists."]}, status=status.HTTP_400_BAD_REQUEST)
             user_validation = User.objects.all().filter(username=serializer.data['username'])
-            if user_validation.count() != 0:
+            if user_validation.count() != 0 and user.username != serializer.data['username']:
                 return Response({"username": ["user with this username already exists."]}, status=status.HTTP_400_BAD_REQUEST)
             user_validation = User.objects.all().filter(email=serializer.data['email'])
-            if user_validation.count() != 0:
+            if user_validation.count() != 0 and user.email != serializer.data['email']:
                 return Response({"email": ["user with this email already exists."]},
                                 status=status.HTTP_400_BAD_REQUEST)
             user.first_name = serializer.data['first_name']
@@ -409,5 +409,15 @@ def user_admin_username(request, username):
             user.email = serializer.data['email']
             user.username = serializer.data['username']
             user.save()
-            return Response(status=status.HTTP_200_OK)
+            user_serializer = {
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "phone": str(user.phone),
+                "address_a": user.address_a,
+                "address_b": user.address_b,
+                "email": user.email,
+                "is_admin": user.is_admin,
+                "username": user.username
+            }
+            return Response(user_serializer, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
