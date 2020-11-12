@@ -90,9 +90,6 @@ def sale(request):
                 quantity=quantity,
                 sub_total=sub_total
             )
-            shopping_car_user.quantity = shopping_car_user.quantity + quantity
-            shopping_car_user.sub_total = shopping_car_user.sub_total + sub_total
-            shopping_car_user.save()
         if sell_detail is not None:
             quantity = quantity + sell_detail.quantity
             if product_detail.quantity < quantity:
@@ -101,8 +98,14 @@ def sale(request):
             sell_detail.quantity = quantity
             sell_detail.sub_total = sub_total
             sell_detail.save()
-            shopping_car_user.quantity = quantity
-            shopping_car_user.sub_total = sub_total
-            shopping_car_user.save()
+        sell_details = SellDeatil.objects.all().filter(shopping_cart_id=shopping_car_user)
+        quantity = 0
+        sub_total = 0
+        for sell in sell_details:
+            quantity = quantity + sell.quantity
+            sub_total = sub_total + sell.sub_total
+        shopping_car_user.quantity = quantity
+        shopping_car_user.sub_total = sub_total
+        shopping_car_user.save()
         return Response({"response": "ok"}, status=status.HTTP_200_OK)
     return Response(serializer_sale.errors, status=status.HTTP_400_BAD_REQUEST)
