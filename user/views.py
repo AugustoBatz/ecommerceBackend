@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework_jwt.serializers import jwt_payload_handler
 from user.models import User
-from user.serializers import UserSerializer, CustomSerializer, LoginSerializer, UserSerializerSignUp, EmailSerializer
+from user.serializers import UserSerializer, CustomSerializer, LoginSerializer, UserSerializerSignUp, EmailSerializer, ChangePassSerializer
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
 import bcrypt
@@ -421,3 +421,49 @@ def user_admin_username(request, username):
             }
             return Response(user_serializer, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def request_change_password(request):
+    mail_recover = ChangePassSerializer(data=request.data)
+    username = None
+    if request.user.is_authenticated:
+        username = request.user.username
+    if mail_recover.is_valid():
+    #    print('es valido')
+        change_password(username, mail_recover.data['new'])
+        res = {
+            "response": "Cambio satisfactorio"
+        }
+        return Response(res, status=status.HTTP_200_OK)
+    return Response(mail_recover.data,status=status.HTTP_400_BAD_REQUEST)
+
+
+def change_password(username, new):
+    #generamos una password de 8 caracteres aleatorios
+    newGeneratedPass = new
+    
+#    print('ya se asigno a newgenertaedpass')
+#    print(email)
+    #buscamos al usuario por su email
+    try:
+#        print('entre a try')
+        thisUser = User.objects.get(username=username)
+            #obtenemos la nueva pass encriptada
+        newPass = new_encrypt(newGeneratedPass, thisUser.salt)
+    #actualizamos la password
+        thisUser.password = newPass
+    #guardamos cambios
+        thisUser.save()
+        email_from = settings.EMAIL_HOST_USER
+        send_mail(
+            subject = 'Cambio de contraseña', 
+            message = 'Se ha cambiado la contrasea para tu correo en la plataforma',
+            from_email = email_from, 
+            recipient_list = [thisUser.email], 
+            auth_user = email_from,
+            auth_password = settings.EMAIL_HOST_PASSWORD,
+            fail_silently = False)
+    except User.DoesNotExist:
+    #    print('usuario no existe')
+        user = None
