@@ -52,7 +52,7 @@ CORS_ALLOW_HEADERS = [
     'accept-encoding',
     'authorization',
     'content-type',
-    'dnt',
+    'dnt',  
     'origin',
     'user-agent',
     'x-csrftoken',
@@ -126,8 +126,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True
-
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = (
+       'http://localhost:4200',
+)
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
