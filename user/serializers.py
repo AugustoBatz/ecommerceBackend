@@ -38,3 +38,6 @@ class UserSerializerSignUp(serializers.ModelSerializer):
 
 class EmailSerializer(serializers.Serializer):
     email = serializers.CharField(required=True)
+
+class ChangePassSerializer(serializers.Serializer):
+    new = serializers.CharField(required=True)
