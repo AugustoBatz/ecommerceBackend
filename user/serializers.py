@@ -44,7 +44,7 @@ class ChangePassSerializer(serializers.Serializer):
 
 class EditProfileSerializer(serializers.Serializer):
     last_name = serializers.CharField(required=True,allow_blank=True, max_length=100)
-    phone = serializers.CharField(required=False,allow_blank=True, max_length=100)
+    phone = serializers.CharField(required=True,allow_blank=True, max_length=100)
     address_a = serializers.CharField(required=True,allow_blank=True, max_length=100)
     address_b = serializers.CharField(required=True,allow_blank=True, max_length=100)
     first_name = serializers.CharField(required=True,allow_blank=True, max_length=100)
