@@ -25,7 +25,7 @@ SECRET_KEY = '(+8xssqg3j%b%gd)66zt)r^&v2x%oujrsegg&rf-y_6y^yhltr'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['184.72.171.253']
+ALLOWED_HOSTS = ['184.72.171.253', 'clothingmecoders.ddns.net', '*']
 
 
 # Application definition
@@ -52,7 +52,7 @@ CORS_ALLOW_HEADERS = [
     'accept-encoding',
     'authorization',
     'content-type',
-    'dnt',
+    'dnt',  
     'origin',
     'user-agent',
     'x-csrftoken',
@@ -158,12 +158,11 @@ STATIC_URL = '/static/'
 #verification email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'abismuzirc97@gmail.com'
-EMAIL_HOST_PASSWORD = '@noventaysiete@97'
+EMAIL_HOST_USER = 'miguelbatz2@gmail.com'
+EMAIL_HOST_PASSWORD = 'fhsteeatthrpwzgo'
 DEFAULT_FR0M_EMAIL = EMAIL_HOST_USER
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAILS_USE_SSL = False
 
 #Encryption
 PASSWORD_HASHERS = [
