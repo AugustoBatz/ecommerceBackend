@@ -46,6 +46,7 @@ urlpatterns = [
     path('api/shopping-car', sales_view.shopping_car),
     path('api/sale', sales_view.sale),
     path('api/contactus', contact_view.send_contact_email),
-    path('api/user/changepass', user_view.request_change_password)
+    path('api/user/changepass', user_view.request_change_password),
+    path('api/user/editprofile', user_view.edit_profile)
 
 ]
