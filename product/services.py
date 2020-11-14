@@ -140,7 +140,7 @@ def get_all_details():
         }, status=status.HTTP_404_NOT_FOUND)
 
 def get_search(search):
-    vacio = {}
+    vacio = []
     try:
         p_found = True
         b_found = True
@@ -162,11 +162,11 @@ def get_search(search):
 
             products_found = Product.objects.filter(name__icontains=search)
         if p_found == False and b_found == False:
-            return Response(vacio, status=status.HTTP_404_NOT_FOUND)
+            return Response(vacio, status=status.HTTP_200_OK)
         return Response(get_products_found(products_found), status=status.HTTP_200_OK)
 
     except Product.DoesNotExist:
-        return Response(vacio, status=status.HTTP_404_NOT_FOUND)
+        return Response(vacio, status=status.HTTP_200_OK)
 
 def get_products_found(list_objects):
     ret = []
