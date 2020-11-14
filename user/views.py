@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework_jwt.serializers import jwt_payload_handler
 from user.models import User
-from user.serializers import UserSerializer, CustomSerializer, LoginSerializer, UserSerializerSignUp, EmailSerializer, ChangePassSerializer
+from user.serializers import UserSerializer, CustomSerializer, LoginSerializer, UserSerializerSignUp, EmailSerializer, ChangePassSerializer, EditProfileSerializer
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
 import bcrypt
@@ -467,3 +467,53 @@ def change_password(username, new):
     except User.DoesNotExist:
     #    print('usuario no existe')
         user = None
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@transaction.atomic()
+def edit_profile(request):
+    authorization = request.headers['Authorization']
+    authorization_split = authorization.split(' ')
+    payload = jwt.decode(authorization_split[1], settings.SECRET_KEY)
+    user = User.objects.get(id=payload['user_id'])
+    if not user.is_active:
+        return Response({"error": "user status invalid"}, status=status.HTTP_400_BAD_REQUEST)
+    edits = EditProfileSerializer(data=request.data)
+    print('antes del is valid')
+    if edits.is_valid():
+        print('entre al edits is valid')
+        #verificar que last name no este en blanco
+        if edits.data['last_name'] != "null":
+            user.last_name = edits.data['last_name']
+        #verificar que address_a no este en blanco
+        if edits.data['address_a'] != "null":
+            user.address_a = edits.data['address_a']       
+        #verificar que address_b no este en blanco
+        if edits.data['address_b'] != "null":
+            user.address_b = edits.data['address_b']
+        #verificar que first name no este en blanco
+        if edits.data['first_name'] != "null":
+            user.first_name = edits.data['first_name']
+        #verificar si el correo no esta siendo utilizado y que no este en blanco              
+        if edits.data['phone'] != "null":
+            if phone_is_in_use(edits.data['phone']) == 0:
+                user.phone = edits.data['phone']
+        user.save()
+        res = {
+            "response": "Cambio satisfactorio"
+        }
+        return Response(res, status=status.HTTP_200_OK)
+    ress = {
+        "response": "Ha ocurrido un error"
+    }
+    return Response(ress,status=status.HTTP_400_BAD_REQUEST)
+
+def phone_is_in_use(phone):
+    try:
+        useremail = User.objects.get(phone=phone)
+        return 1
+    except User.DoesNotExist:
+        return 0
+    return 0
+
+
