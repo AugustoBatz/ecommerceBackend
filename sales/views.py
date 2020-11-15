@@ -1,8 +1,8 @@
 from user.views import *
 
 from user.models import User
-from sales.models import ShoppingCart, SellDeatil
-from sales.serializers import SaleSerializer
+from sales.models import ShoppingCart, SellDeatil, StatusSell, Sell
+from sales.serializers import SaleSerializer, ConfirmSaleSerializer
 from product.models import ProductDetail
 
 @api_view(['GET'])
@@ -109,3 +109,59 @@ def sale(request):
         shopping_car_user.save()
         return Response({"response": "ok"}, status=status.HTTP_200_OK)
     return Response(serializer_sale.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@transaction.atomic()
+@permission_classes([IsAuthenticated])
+def make_sale(request, id):
+    authorization = request.headers['Authorization']
+    authorization_split = authorization.split(' ')
+    payload = jwt.decode(authorization_split[1], settings.SECRET_KEY)
+    user = User.objects.get(id=payload['user_id'])
+    if not user.is_active:
+        return Response({"error": "user status invalid"}, status=status.HTTP_400_BAD_REQUEST)
+    serializer = ConfirmSaleSerializer(data=request.data)
+    if serializer.is_valid():
+        try:
+            shopping_cart = ShoppingCart.objects.get(pk=id, canceled=0, finish=0)
+        except ShoppingCart.DoesNotExist:
+            return Response({"error": "cart not found"}, status=status.HTTP_400_BAD_REQUEST)
+        details_sale = SellDeatil.objects.all().filter(shopping_cart_id=shopping_cart)
+        sid = transaction.savepoint()
+        for details_sale in details_sale:
+            quantity_car = details_sale.quantity
+            product_detail_cart = details_sale.product_detail
+            quantity_stock = product_detail_cart.quantity
+            if quantity_car > quantity_stock:
+                transaction.savepoint_rollback(sid)
+                return Response({"error": "insufficient stock ",
+                                 "message": {
+                                     "product": details_sale.product_detail.product_id.name,
+                                     "code":details_sale.product_detail.product_id.code,
+                                     "category": details_sale.product_detail.product_id.category,
+                                     "brand":  details_sale.product_detail.product_id.brand,
+                                     "color": details_sale.product_detail.color_id.color,
+                                     "size": details_sale.product_detail.size_id.size,
+
+                                 }}
+                                , status=status.HTTP_400_BAD_REQUEST)
+            product_detail_cart.quantity = product_detail_cart.quantity - quantity_car
+            product = product_detail_cart.product_id
+            product.quantity = product.quantity - quantity_car
+            product.save()
+            product_detail_cart.save()
+        shopping_cart.finish = True
+        shopping_cart.save()
+        sell_finish = Sell.objects.create(
+            shopping_car_id=shopping_cart,
+            address=serializer.data['address'],
+            method_pay=serializer.data['method_pay'],
+        )
+        StatusSell.objects.create(
+            state=1,
+            code="random code",
+            sell_id=sell_finish
+        )
+        return Response({"response":"ok"}, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

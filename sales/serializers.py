@@ -5,3 +5,8 @@ class SaleSerializer(serializers.Serializer):
     product_detail = serializers.IntegerField()
     quantity = serializers.IntegerField()
     shopping_cart_id = serializers.IntegerField()
+
+
+class ConfirmSaleSerializer(serializers.Serializer):
+    method_pay = serializers.IntegerField()
+    address = serializers.CharField()

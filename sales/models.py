@@ -19,11 +19,13 @@ class SellDeatil(models.Model):
     sub_total = models.FloatField()
 
 class Sell(models.Model):
-    shopping_carg_id = models.ForeignKey(ShoppingCart, on_delete=models.CASCADE)
+    shopping_car_id = models.ForeignKey(ShoppingCart, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
+    address = models.CharField(max_length=200)
+    method_pay = models.IntegerField()
 
 class StatusSell(models.Model):
-    state = models.CharField(max_length=30)
+    state = models.IntegerField()
     date = models.DateTimeField(auto_now_add=True)
     code = models.CharField(max_length=25)
     sell_id = models.ForeignKey(Sell, on_delete=models.CASCADE)
