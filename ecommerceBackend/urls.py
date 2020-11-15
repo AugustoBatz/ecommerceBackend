@@ -20,6 +20,7 @@ from user import views as user_view
 from product import views as product_view
 from content import views as content_view
 from sales import views as sales_view
+from reports import views as reports_view
 
 urlpatterns = [
     #path('admin/', admin.site.urls),
@@ -46,8 +47,11 @@ urlpatterns = [
     path('api/shopping-car', sales_view.shopping_car),
     path('api/sale', sales_view.sale),
     path('api/sale/<int:id>', sales_view.make_sale),
+    path('api/sale/detail/<int:id>', sales_view.remove_detail),
     path('api/contactus', contact_view.send_contact_email),
     path('api/user/changepass', user_view.request_change_password),
     path('api/user/editprofile', user_view.edit_profile),
+    path('api/reports', reports_view.get_sales),
+    path('api/user/reports', reports_view.get_sales_by_user)
 
 ]

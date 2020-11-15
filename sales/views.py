@@ -5,6 +5,30 @@ from sales.models import ShoppingCart, SellDeatil, StatusSell, Sell
 from sales.serializers import SaleSerializer, ConfirmSaleSerializer
 from product.models import ProductDetail
 
+
+@api_view(['DELETE'])
+@transaction.atomic()
+@permission_classes([IsAuthenticated])
+def remove_detail(request, id):
+    authorization = request.headers['Authorization']
+    authorization_split = authorization.split(' ')
+    payload = jwt.decode(authorization_split[1], settings.SECRET_KEY)
+    user = User.objects.get(id=payload['user_id'])
+    if not user.is_active:
+        return Response({"error": "user status invalid"}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        detail_sale = SellDeatil.objects.get(pk=id)
+    except SellDeatil.DoesNotExist:
+        return Response({"error": "detail sale not found"}, status=status.HTTP_400_BAD_REQUEST)
+    quantity = detail_sale.quantity
+    sub_total = detail_sale.sub_total
+    detail_sale.delete()
+    shopping_car = detail_sale.shopping_cart_id
+    shopping_car.quantity = shopping_car.quantity - quantity
+    shopping_car.sub_total = shopping_car.sub_total - sub_total
+    shopping_car.save()
+    return Response({"response": "ok"}, status=status.HTTP_200_OK)
+
 @api_view(['GET'])
 @transaction.atomic()
 @permission_classes([IsAuthenticated])
@@ -31,6 +55,7 @@ def shopping_car(request):
     sales_list = []
     for sale in sale_details:
         simple_sail = {
+            'id': sale.pk,
             'quantity': sale.quantity,
             'sub_total': sale.sub_total,
             'price': sale.product_detail.price,
