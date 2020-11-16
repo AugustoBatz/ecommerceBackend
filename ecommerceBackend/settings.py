@@ -128,7 +128,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
-       'http://localhost:4200', 'pro-in.shop', 'https://pro-in.shop'
+       'http://localhost:4200', 'pro-in.shop', 'https://pro-in.shop', 'https://www.pro-in.shop/'
 )
 
 # Internationalization
